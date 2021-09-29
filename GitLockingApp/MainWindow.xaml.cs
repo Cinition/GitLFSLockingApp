@@ -24,13 +24,13 @@ namespace GitLockingApp
         private string[] selectedFileUrl = new string[20];
         private string[] selectedLockUrl = new string[20];
         private string path = "";
-        private string gitPath = "D:/MainFolder/Programming/School/p3/game";
+        private string gitPath = "";
 
         public MainWindow()
         {
             InitializeComponent(); 
             path = System.Reflection.Assembly.GetExecutingAssembly().GetName().CodeBase;
-            //gitPath = path.Substring(8, path.Length - (18 + 8));
+            gitPath = path.Substring(8, path.Length - (18 + 8));
             path = Path.GetDirectoryName(path);
             updateLockList();
         }
