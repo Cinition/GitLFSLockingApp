@@ -59,6 +59,11 @@ namespace GitLockingApp
             }
         }
 
+        private void RefreshList(object sender, RoutedEventArgs e)
+        {
+            updateLockList();
+        }
+
         private void updateLockList()
         {
             using (PowerShell ps = PowerShell.Create())
@@ -98,6 +103,15 @@ namespace GitLockingApp
                     }
 
                     Collection<PSObject> results = ps.Invoke();
+
+                    if (results.Count > 0)
+                    {
+                        for (int i = 0; i < results.Count; i++)
+                        {
+                            ErrorWindow error = new ErrorWindow(results[i].ToString());
+                            error.Show();
+                        }
+                    }
                 }
 
                 updateLockList();
@@ -118,6 +132,15 @@ namespace GitLockingApp
                     }
 
                     Collection<PSObject> results = ps.Invoke();
+
+                    if (results.Count > 0)
+                    {
+                        for (int i = 0; i < results.Count; i++)
+                        {
+                            ErrorWindow error = new ErrorWindow(results[i].ToString());
+                            error.Show();
+                        }
+                    }
                 }
 
                 updateLockList();
@@ -128,7 +151,8 @@ namespace GitLockingApp
         {
             for (int i = 0; i < List.SelectedItems.Count; i++)
             {
-                selectedLockUrl[i] = List.SelectedItems[i].ToString();
+                string[] selectedString = List.SelectedItems[i].ToString().Split(new string[] { "\t" }, StringSplitOptions.None);
+                selectedLockUrl[i] = selectedString[0];
             }
 
             if (List.SelectedItems.Count > 1)
