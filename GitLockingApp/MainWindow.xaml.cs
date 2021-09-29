@@ -24,7 +24,7 @@ namespace GitLockingApp
         private string[] selectedFileUrl = new string[20];
         private string[] selectedLockUrl = new string[20];
         private string path = "";
-        private string gitPath = "C:/Users/cornnieu/Desktop/Programming/P3/game";
+        private string gitPath = "D:/MainFolder/Programming/School/p3/game";
 
         public MainWindow()
         {
@@ -54,7 +54,7 @@ namespace GitLockingApp
                     }
 
                     string[] split = openFileDialog.FileNames[i].Split(new string[] { "game\\" }, StringSplitOptions.None);
-                    selectedFileUrl[i] = split[1];
+                    selectedFileUrl[i] = split[1].Replace(@"\", @"/");
                 }
             }
         }
@@ -66,12 +66,17 @@ namespace GitLockingApp
 
         private void updateLockList()
         {
+            UpdateLockListPS();
+        }
+
+        private async void UpdateLockListPS()
+        {
             using (PowerShell ps = PowerShell.Create())
             {
                 ps.AddScript($"cd {gitPath}");
                 ps.AddScript(@"git lfs locks");
 
-                Collection<PSObject> results = ps.Invoke();
+                PSDataCollection<PSObject> results = await Task.Factory.FromAsync(ps.BeginInvoke(), aResults => ps.EndInvoke(aResults));
 
                 List.Items.Clear();
 
@@ -93,28 +98,42 @@ namespace GitLockingApp
         {
             if (CountString(selectedFileUrl) > 0)
             {
+                LockingFile();
+            }
+        }
+
+        private async void LockingFile()
+        {
+            ResponseWindow response = new ResponseWindow(CountString(selectedFileUrl));
+            response.Show();
+
+            for (int i = 0; i < CountString(selectedFileUrl); i++)
+            {
                 using (PowerShell ps = PowerShell.Create())
                 {
                     ps.AddScript($"cd {gitPath}");
+                    ps.AddScript($"git lfs lock {selectedFileUrl[i]}");
 
-                    foreach (var url in selectedFileUrl)
+                    response.UpdateCounter("Locking " + selectedFileUrl[i]);
+
+                    PSDataCollection<PSObject> result = await Task.Factory.FromAsync(ps.BeginInvoke(), results => ps.EndInvoke(results));
+
+                    if (result.Count > 0)
                     {
-                        ps.AddScript($"git lfs lock {url}");
-                    }
-
-                    Collection<PSObject> results = ps.Invoke();
-
-                    if (results.Count > 0)
-                    {
-                        for (int i = 0; i < results.Count; i++)
+                        if (result[0].ToString() != $"Locked {selectedFileUrl[i]}")
                         {
-                            ErrorWindow error = new ErrorWindow(results[i].ToString());
+                            response.Close();
+                            ErrorWindow error = new ErrorWindow(result[0].ToString());
                             error.Show();
+                            break;
                         }
                     }
                 }
-
-                updateLockList();
+            }
+            updateLockList();
+            if (response.ShowActivated)
+            {
+                response.Close();
             }
         }
 
@@ -122,28 +141,44 @@ namespace GitLockingApp
         {
             if (CountString(selectedLockUrl) > 0)
             {
+                UnlockingFile();
+            }
+        }
+
+        private async void UnlockingFile()
+        {
+            ResponseWindow response = new ResponseWindow(CountString(selectedLockUrl));
+            response.Show();
+
+            for (int i = 0; i < CountString(selectedLockUrl); i++)
+            {
                 using (PowerShell ps = PowerShell.Create())
                 {
                     ps.AddScript($"cd {gitPath}");
+                    ps.AddScript($"git lfs unlock {selectedLockUrl[i]}");
 
-                    foreach (var url in selectedLockUrl)
+                    response.UpdateCounter("Unlocking " + selectedLockUrl[i]);
+
+                    PSDataCollection<PSObject> result = await Task.Factory.FromAsync(ps.BeginInvoke(), results => ps.EndInvoke(results));
+
+                    if (result.Count > 0)
                     {
-                        ps.AddScript($"git lfs unlock {url}");
-                    }
+                        string correctResult = result[0].ToString().Replace("{", "").Replace("}", "");
 
-                    Collection<PSObject> results = ps.Invoke();
-
-                    if (results.Count > 0)
-                    {
-                        for (int i = 0; i < results.Count; i++)
+                        if (correctResult != $"Unlocked {selectedLockUrl[i].Trim()}")
                         {
-                            ErrorWindow error = new ErrorWindow(results[i].ToString());
+                            response.Close();
+                            ErrorWindow error = new ErrorWindow(result[0].ToString());
                             error.Show();
+                            break;
                         }
                     }
                 }
-
-                updateLockList();
+            }
+            updateLockList();
+            if (response.ShowActivated)
+            {
+                response.Close();
             }
         }
 
@@ -188,5 +223,6 @@ namespace GitLockingApp
                 stringArray[i] = "";
             }
         }
+
     }
 }

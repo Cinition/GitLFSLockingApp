@@ -5,9 +5,9 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:GitLockingApp"
         mc:Ignorable="d"
-        Title="GitAnswerWindow" Height="100" Width="200" ResizeMode="NoResize">
+        Title="Error" Height="100" Width="200" ResizeMode="NoResize">
     <Grid>
-        <Button Name="CloseButton" Click="CloseClick" Content="Okiedokie" HorizontalAlignment="Center" Margin="47,30,47,0" VerticalAlignment="Top" Width="100" Height="18" FontSize="12" />
-        <Label Name="ErrorText" Content="Label" HorizontalAlignment="Left" VerticalAlignment="Top" Width="194" Padding="5,0" Margin="0,5,0,0" HorizontalContentAlignment="Center"/>
+        <Button Name="CloseButton" Click="CloseClick" Content="Close" HorizontalAlignment="Center" Margin="44,35,44.6,0" VerticalAlignment="Top" Width="60" Height="25" FontSize="14" />
+        <Label Name="ErrorText" Content="Label" HorizontalAlignment="Left" VerticalAlignment="Top" Width="194" Padding="5,0" Margin="0,5,0,0" HorizontalContentAlignment="Center" FontSize="15"/>
     </Grid>
 </Window>
