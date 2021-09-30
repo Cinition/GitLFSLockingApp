@@ -22,15 +22,23 @@ namespace GitLockingApp
     public partial class MainWindow : Window
     {
         private string[] selectedFileUrl = new string[20];
+        private string[] selectedLockID = new string[20];
         private string[] selectedLockUrl = new string[20];
         private string path = "";
-        private string gitPath = "";
+        #if !DEBUG
+            private string gitPath = "";
+        #else
+            private string gitPath = "C:/Users/cornnieu/Desktop/Programming/P3/game/GitLockApp";
+        #endif
 
         public MainWindow()
         {
             InitializeComponent(); 
             path = System.Reflection.Assembly.GetExecutingAssembly().GetName().CodeBase;
-            gitPath = path.Substring(8, path.Length - (18 + 8 + 10));
+#if !DEBUG
+            gitPath = path.Substring(8);
+            gitPath = gitPath.Split(new string[] { "/GitLockApp" }, StringSplitOptions.None)[0];
+#endif
             path = Path.GetDirectoryName(path);
             UpdateLockList();
         }
@@ -91,6 +99,7 @@ namespace GitLockingApp
 
             ClearStringArray(selectedFileUrl);
             ClearStringArray(selectedLockUrl);
+            ClearStringArray(selectedLockID);
             FileUrl.Content = "...";
         }
 
@@ -120,7 +129,7 @@ namespace GitLockingApp
 
                     if (result.Count > 0)
                     {
-                        if (result[0].ToString() != $"Locked {selectedFileUrl[i]}")
+                        if (!result[0].ToString().Contains("Locked"))
                         {
                             response.Close();
                             ErrorWindow error = new ErrorWindow(result[0].ToString());
@@ -139,7 +148,7 @@ namespace GitLockingApp
 
         private void Unlock(object sender, RoutedEventArgs e)
         {
-            if (CountString(selectedLockUrl) > 0)
+            if (CountString(selectedLockID) > 0)
             {
                 UnlockingFile();
             }
@@ -147,15 +156,15 @@ namespace GitLockingApp
 
         private async void UnlockingFile()
         {
-            ResponseWindow response = new ResponseWindow(CountString(selectedLockUrl));
+            ResponseWindow response = new ResponseWindow(CountString(selectedLockID));
             response.Show();
 
-            for (int i = 0; i < CountString(selectedLockUrl); i++)
+            for (int i = 0; i < CountString(selectedLockID); i++)
             {
                 using (PowerShell ps = PowerShell.Create())
                 {
                     ps.AddScript($"cd {gitPath}");
-                    ps.AddScript($"git lfs unlock {selectedLockUrl[i]}");
+                    ps.AddScript($"git lfs unlock --id={selectedLockID[i]}");
 
                     response.UpdateCounter("Unlocking " + selectedLockUrl[i]);
 
@@ -163,9 +172,7 @@ namespace GitLockingApp
 
                     if (result.Count > 0)
                     {
-                        string correctResult = result[0].ToString().Replace("{", "").Replace("}", "");
-
-                        if (correctResult != $"Unlocked {selectedLockUrl[i].Trim()}")
+                        if (!result[0].ToString().Contains("Unlocked"))
                         {
                             response.Close();
                             ErrorWindow error = new ErrorWindow(result[0].ToString());
@@ -188,6 +195,7 @@ namespace GitLockingApp
             {
                 string[] selectedString = List.SelectedItems[i].ToString().Split(new string[] { "\t" }, StringSplitOptions.None);
                 selectedLockUrl[i] = selectedString[0];
+                selectedLockID[i] = selectedString[2].Substring(3);
             }
 
             if (List.SelectedItems.Count > 1)
