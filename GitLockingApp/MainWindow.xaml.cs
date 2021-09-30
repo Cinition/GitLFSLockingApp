@@ -30,9 +30,9 @@ namespace GitLockingApp
         {
             InitializeComponent(); 
             path = System.Reflection.Assembly.GetExecutingAssembly().GetName().CodeBase;
-            gitPath = path.Substring(8, path.Length - (18 + 8));
+            gitPath = path.Substring(8, path.Length - (18 + 8 + 10));
             path = Path.GetDirectoryName(path);
-            updateLockList();
+            UpdateLockList();
         }
 
         private void SelectFile(object sender, RoutedEventArgs e)
@@ -61,10 +61,10 @@ namespace GitLockingApp
 
         private void RefreshList(object sender, RoutedEventArgs e)
         {
-            updateLockList();
+            UpdateLockList();
         }
 
-        private void updateLockList()
+        private void UpdateLockList()
         {
             UpdateLockListPS();
         }
@@ -130,7 +130,7 @@ namespace GitLockingApp
                     }
                 }
             }
-            updateLockList();
+            UpdateLockList();
             if (response.ShowActivated)
             {
                 response.Close();
@@ -175,7 +175,7 @@ namespace GitLockingApp
                     }
                 }
             }
-            updateLockList();
+            UpdateLockList();
             if (response.ShowActivated)
             {
                 response.Close();
